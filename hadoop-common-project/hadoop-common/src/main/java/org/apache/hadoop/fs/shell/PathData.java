@@ -235,6 +235,16 @@ public class PathData implements Comparable<PathData> {
   }
 
   /**
+   * Returns a new PathData with the given extension
+   * @param extension
+   * @return
+   * @throws IOException
+   */
+  public PathData prefix(String extension) throws IOException {
+	  return new PathData(fs , extension + this);
+  }
+  
+  /**
    * Test if the parent directory exists
    * @return boolean indicating parent exists
    * @throws IOException upon unexpected error
