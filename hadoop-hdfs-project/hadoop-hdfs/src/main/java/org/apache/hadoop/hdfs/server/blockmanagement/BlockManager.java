@@ -72,6 +72,7 @@ import org.apache.hadoop.hdfs.server.protocol.KeyUpdateCommand;
 import org.apache.hadoop.hdfs.server.protocol.ReceivedDeletedBlockInfo;
 import org.apache.hadoop.hdfs.util.LightWeightLinkedSet;
 import org.apache.hadoop.net.Node;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Daemon;
 import org.apache.hadoop.util.Time;
 
@@ -305,6 +306,14 @@ public class BlockManager {
 
   private static BlockTokenSecretManager createBlockTokenSecretManager(
       final Configuration conf) {
+
+    if (UserGroupInformation.isSecurityEnabled() &&
+        conf.get(DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE_KEY) == null) {
+	
+	conf.setBoolean(DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE_KEY, true);
+	LOG.warn(DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE_KEY + " is set to true automatically");
+    }
+
     final boolean isEnabled = conf.getBoolean(
         DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE_KEY, 
         DFSConfigKeys.DFS_BLOCK_ACCESS_TOKEN_ENABLE_DEFAULT);
