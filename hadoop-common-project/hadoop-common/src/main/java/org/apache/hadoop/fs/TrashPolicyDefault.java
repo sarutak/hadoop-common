@@ -37,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Options.Rename;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
 
 /** Provides a <i>trash</i> feature.  Files are moved to a user's trash
@@ -155,7 +156,8 @@ public class TrashPolicyDefault extends TrashPolicy {
       }
     }
     throw (IOException)
-      new IOException("Failed to move to trash: "+path).initCause(cause);
+      new IOException("Failed to move to trash: " + path
+          + " error: " + StringUtils.stringifyException(cause));
   }
 
   @SuppressWarnings("deprecation")
