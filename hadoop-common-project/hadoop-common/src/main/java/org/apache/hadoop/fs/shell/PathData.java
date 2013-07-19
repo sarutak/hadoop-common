@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -232,6 +233,58 @@ public class PathData implements Comparable<PathData> {
    */
   public PathData suffix(String extension) throws IOException {
     return new PathData(fs, this+extension);
+  }
+
+  /**
+   * Returns a new PathData with the given extension.
+   * @param extension for the prefix
+   * @return PathData
+   * @throws IOException shouldn't happen
+   */
+  public PathData prefix(String extension) throws IOException {
+    StringBuilder prefixedPath = new StringBuilder();
+
+    String scheme = uri.getScheme();
+    if (scheme != null) {
+      prefixedPath.append(scheme);
+      prefixedPath.append(":");
+    }
+
+    String authority = uri.getAuthority();
+    if (authority != null) {
+      prefixedPath.append("//");
+      prefixedPath.append(authority);
+    }
+
+    String path = uri.getPath();
+    if ((scheme == null) || (inferredSchemeFromPath)) {
+      if (Path.isWindowsAbsolutePath(path, true)) {
+        // Strip the leading '/' added in stringToUri so users see a valid
+        // Windows path.
+        path = path.substring(1);
+      }
+    }
+
+    StringTokenizer tokenizer = new StringTokenizer(path, "/", true);
+    int numTokens = tokenizer.countTokens();
+    for(int i = 0; i < numTokens-1; i++) {
+      prefixedPath.append(tokenizer.nextToken());
+    }
+    prefixedPath.append(extension+tokenizer.nextToken());
+
+    String query = uri.getQuery();
+    if (query != null) {
+      prefixedPath.append("?");
+      prefixedPath.append(query);
+    }
+
+    String fragment = uri.getFragment();
+    if (fragment != null) {
+      prefixedPath.append("#");
+      prefixedPath.append(fragment);
+    }
+
+    return new PathData(fs, prefixedPath.toString());
   }
 
   /**

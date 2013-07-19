@@ -271,7 +271,7 @@ abstract class CommandWithDestination extends FsCommand {
     }
     TargetFileSystem targetFs = new TargetFileSystem(target.fs);
     try {
-      PathData tempTarget = target.suffix("._COPYING_");
+      PathData tempTarget = target.prefix("_").suffix("._COPYING_");
       targetFs.setWriteChecksum(writeChecksum);
       targetFs.writeStreamToFile(in, tempTarget);
       targetFs.rename(tempTarget, target);

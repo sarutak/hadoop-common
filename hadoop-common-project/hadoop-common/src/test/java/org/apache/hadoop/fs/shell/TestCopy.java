@@ -45,7 +45,7 @@ import org.mockito.stubbing.OngoingStubbing;
 public class TestCopy {
   static Configuration conf;
   static Path path = new Path("mockfs:/file");
-  static Path tmpPath = new Path("mockfs:/file._COPYING_");
+  static Path tmpPath = new Path("mockfs:/_file._COPYING_");
   static Put cmd;
   static FileSystem mockFs;
   static PathData target;
