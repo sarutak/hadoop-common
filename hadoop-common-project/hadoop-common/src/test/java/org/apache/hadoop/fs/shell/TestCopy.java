@@ -44,6 +44,7 @@ import org.mockito.stubbing.OngoingStubbing;
 
 public class TestCopy {
   static Configuration conf;
+  static Path parentPath = new Path("mockfs:/");
   static Path path = new Path("mockfs:/file");
   static Path tmpPath = new Path("mockfs:/file._COPYING_");
   static Put cmd;
@@ -72,6 +73,7 @@ public class TestCopy {
   public void testCopyStreamTarget() throws Exception {
     FSDataOutputStream out = mock(FSDataOutputStream.class);
     whenFsCreate().thenReturn(out);
+    when(mockFs.getFileStatus(eq(parentPath))).thenReturn(fileStat);
     when(mockFs.getFileStatus(eq(tmpPath))).thenReturn(fileStat);
     when(mockFs.rename(eq(tmpPath), eq(path))).thenReturn(true);
     FSInputStream in = mock(FSInputStream.class);
@@ -88,6 +90,7 @@ public class TestCopy {
   public void testCopyStreamTargetExists() throws Exception {
     FSDataOutputStream out = mock(FSDataOutputStream.class);
     whenFsCreate().thenReturn(out);
+    when(mockFs.getFileStatus(eq(parentPath))).thenReturn(fileStat);
     when(mockFs.getFileStatus(eq(path))).thenReturn(fileStat);
     target.refreshStatus(); // so it's updated as existing
     cmd.setOverwrite(true);
@@ -105,8 +108,25 @@ public class TestCopy {
   }
 
   @Test
+  public void testCopyStreamTargetParentNotExists() throws Exception {
+    FSDataOutputStream out = mock(FSDataOutputStream.class);
+    whenFsCreate().thenReturn(out);
+    when(mockFs.getFileStatus(eq(parentPath))).thenReturn(null);
+    when(mockFs.getFileStatus(eq(tmpPath))).thenReturn(fileStat);
+    when(mockFs.rename(eq(tmpPath), eq(path))).thenReturn(true);
+    FSInputStream in = mock(FSInputStream.class);
+    when(in.read(any(byte[].class), anyInt(), anyInt())).thenReturn(-1);
+    
+    tryCopyStream(in, false);
+    verify(mockFs, never()).delete(any(Path.class), anyBoolean());
+    verify(mockFs, never()).rename(any(Path.class), any(Path.class));
+    verify(mockFs, never()).close();
+  }
+
+  @Test
   public void testInterruptedCreate() throws Exception {
     whenFsCreate().thenThrow(new InterruptedIOException());
+    when(mockFs.getFileStatus(eq(parentPath))).thenReturn(fileStat);
     when(mockFs.getFileStatus(eq(tmpPath))).thenReturn(fileStat);
     FSDataInputStream in = mock(FSDataInputStream.class);
 
@@ -121,6 +141,7 @@ public class TestCopy {
   public void testInterruptedCopyBytes() throws Exception {
     FSDataOutputStream out = mock(FSDataOutputStream.class);
     whenFsCreate().thenReturn(out);
+    when(mockFs.getFileStatus(eq(parentPath))).thenReturn(fileStat);
     when(mockFs.getFileStatus(eq(tmpPath))).thenReturn(fileStat);
     FSInputStream in = mock(FSInputStream.class);
     // make IOUtils.copyBytes fail
@@ -138,6 +159,7 @@ public class TestCopy {
   public void testInterruptedRename() throws Exception {
     FSDataOutputStream out = mock(FSDataOutputStream.class);
     whenFsCreate().thenReturn(out);
+    when(mockFs.getFileStatus(eq(parentPath))).thenReturn(fileStat);
     when(mockFs.getFileStatus(eq(tmpPath))).thenReturn(fileStat);
     when(mockFs.rename(eq(tmpPath), eq(path))).thenThrow(
         new InterruptedIOException());

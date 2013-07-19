@@ -268,6 +268,8 @@ abstract class CommandWithDestination extends FsCommand {
   throws IOException {
     if (target.exists && (target.stat.isDirectory() || !overwrite)) {
       throw new PathExistsException(target.toString());
+    } else if (!target.parentExists()) {
+      throw new PathNotFoundException(target.toString());
     }
     TargetFileSystem targetFs = new TargetFileSystem(target.fs);
     try {
