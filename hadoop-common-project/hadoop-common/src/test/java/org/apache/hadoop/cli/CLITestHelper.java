@@ -394,7 +394,7 @@ public class CLITestHelper {
       } else if (qName.equals("command")) {
           stdinStr = attributes.getValue("string-from-stdin");
       }  
-                  
+      
       charString = "";
     }
     
