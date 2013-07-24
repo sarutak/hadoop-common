@@ -4209,6 +4209,22 @@
     </test>
 
     <test> <!-- TESTED -->
+      <description>put: putting a file from stdin into a non existent directory</description>
+      <test-commands>
+        <command string-from-stdin="Hello World!">-fs NAMENODE -put - wrongdir/destination</command>
+      </test-commands>
+      <cleanup-commands>
+        <command>-fs NAMENODE -rm -r /user</command>
+      </cleanup-commands>
+      <comparators>
+        <comparator>
+          <type>RegexpComparator</type>
+          <expected-output>^put: `wrongdir/destination': No such file or directory</expected-output>
+        </comparator>
+      </comparators>
+    </test>
+
+    <test> <!-- TESTED -->
       <description>put: putting a local file into hdfs:// path </description>
       <test-commands>
         <command>-fs NAMENODE -put CLITEST_DATA/data15bytes hdfs:///data15bytes</command>
@@ -4328,6 +4344,22 @@
         <comparator>
           <type>RegexpComparator</type>
           <expected-output>^put: `hdfs:///wrongdir': No such file or directory</expected-output>
+        </comparator>
+      </comparators>
+    </test>
+
+    <test> <!-- TESTED -->
+      <description>put: putting a file from stdin into a non existent directory in hdfs:// path </description>
+      <test-commands>
+        <command string-from-stdin="Hello World!">-fs NAMENODE -put -  hdfs:///wrongdir/destination</command>
+      </test-commands>
+      <cleanup-commands>
+        <command>-fs NAMENODE -rm -r hdfs:///*</command>
+      </cleanup-commands>
+      <comparators>
+        <comparator>
+          <type>RegexpComparator</type>
+          <expected-output>^put: `hdfs:///wrongdir/destination': No such file or directory</expected-output>
         </comparator>
       </comparators>
     </test>
@@ -4455,6 +4487,23 @@
         </comparator>
       </comparators>
     </test>
+
+    <test> <!-- TESTED -->
+      <description>put: putting a file from stdin into a non existent directory in Namenode's path </description>
+      <test-commands>
+        <command string-from-stdin="Hello World!">-fs NAMENODE -put - NAMENODE/wrongdir/destination</command>
+      </test-commands>
+      <cleanup-commands>
+        <command>-fs NAMENODE -rm -r NAMENODE/*</command>
+      </cleanup-commands>
+      <comparators>
+        <comparator>
+          <type>RegexpComparator</type>
+          <expected-output>^put: `hdfs://\w+[-.a-z0-9]*:[0-9]+/wrongdir/destination': No such file or directory</expected-output>
+        </comparator>
+      </comparators>
+    </test>
+
 
     <!-- Tests for copyFromLocal -->
     <test> <!-- TESTED -->
@@ -4702,6 +4751,22 @@
         </comparator>
       </comparators>
     </test>
+
+    <test> <!-- TESTED -->
+      <description>copyFromLocal: copying a file from stdin into a non existent directory</description>
+      <test-commands>
+        <command string-from-stdin="Hello World!">-fs NAMENODE -copyFromLocal - wrongdir/destination</command>
+      </test-commands>
+      <cleanup-commands>
+        <command>-fs NAMENODE -rm -r /user</command>
+      </cleanup-commands>
+      <comparators>
+        <comparator>
+          <type>RegexpComparator</type>
+          <expected-output>^copyFromLocal: `wrongdir/destination': No such file or directory</expected-output>
+        </comparator>
+      </comparators>
+    </test>
     
     <test> <!-- TESTED -->
       <description>copyFromLocal: Test for hdfs:// path - copying local file into a hdfs://file</description>
@@ -4825,6 +4890,22 @@
         <comparator>
           <type>RegexpComparator</type>
           <expected-output>^copyFromLocal: `hdfs:///wrongdir': No such file or directory</expected-output>
+        </comparator>
+      </comparators>
+    </test>
+
+    <test> <!-- TESTED -->
+      <description>copyFromLocal: Test for hdfs:// path - copying a local file from stdin into a non existent directory</description>
+      <test-commands>
+        <command string-from-stdin="Hello World!">-fs NAMENODE -copyFromLocal - hdfs:///wrongdir/destination</command>
+      </test-commands>
+      <cleanup-commands>
+        <command>-fs NAMENODE -rm -r hdfs:///*</command>
+      </cleanup-commands>
+      <comparators>
+        <comparator>
+          <type>RegexpComparator</type>
+          <expected-output>^copyFromLocal: `hdfs:///wrongdir/destination': No such file or directory</expected-output>
         </comparator>
       </comparators>
     </test>
@@ -4952,6 +5033,22 @@
         <comparator>
           <type>RegexpComparator</type>
           <expected-output>^copyFromLocal: `hdfs://\w+[-.a-z0-9]*:[0-9]+/wrongdir': No such file or directory</expected-output>
+        </comparator>
+      </comparators>
+    </test>
+
+    <test> <!-- TESTED -->
+      <description>copyFromLocal: Test for Namenode's path - copying a local file from stdin into a non existent directory</description>
+      <test-commands>
+        <command string-from-stdin="Hello World!">-fs NAMENODE -copyFromLocal - NAMENODE/wrongdir/destination</command>
+      </test-commands>
+      <cleanup-commands>
+        <command>-fs NAMENODE -rm -r NAMENODE/*</command>
+      </cleanup-commands>
+      <comparators>
+        <comparator>
+          <type>RegexpComparator</type>
+          <expected-output>^copyFromLocal: `hdfs://\w+[-.a-z0-9]*:[0-9]+/wrongdir/destination': No such file or directory</expected-output>
         </comparator>
       </comparators>
     </test>
@@ -5822,7 +5919,7 @@
         </comparator>
       </comparators>
     </test>
-    
+
     <test> <!-- TESTED -->
       <description>mkdir: Test recreate of existing directory fails</description>
       <test-commands>

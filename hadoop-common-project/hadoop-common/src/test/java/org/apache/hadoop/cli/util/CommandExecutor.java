@@ -20,8 +20,10 @@ package org.apache.hadoop.cli.util;
 
 import org.apache.hadoop.cli.CLITestHelper;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.StringTokenizer;
 
@@ -50,16 +52,22 @@ public abstract class CommandExecutor {
     
     return args;
   }
-  
-  public Result executeCommand(final String cmd) throws Exception {
+
+  public Result executeCommand(final String cmd, final String stdinStr) {
     int exitCode = 0;
     Exception lastException = null;
     
-    
+    ByteArrayInputStream bai = null;
     ByteArrayOutputStream bao = new ByteArrayOutputStream();
+
+    InputStream origIn = System.in;
     PrintStream origOut = System.out;
     PrintStream origErr = System.err;
     
+    if (stdinStr != null) {
+      bai = new ByteArrayInputStream(stdinStr.getBytes());
+      System.setIn(bai);
+    }
     System.setOut(new PrintStream(bao));
     System.setErr(new PrintStream(bao));
     
@@ -70,10 +78,15 @@ public abstract class CommandExecutor {
       lastException = e;
       exitCode = -1;
     } finally {
+      System.setIn(origIn);
       System.setOut(origOut);
       System.setErr(origErr);
     }
     return new Result(bao.toString(), exitCode, lastException, cmd);
+  }	
+  
+  public Result executeCommand(final String cmd) throws Exception {
+    return executeCommand(cmd, null);
   }
   
   protected abstract void execute(final String cmd) throws Exception;

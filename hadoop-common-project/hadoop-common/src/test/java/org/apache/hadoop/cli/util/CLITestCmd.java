@@ -25,10 +25,16 @@ import org.apache.hadoop.fs.FsShell;
 public class CLITestCmd implements CLICommand {
   private final CLICommandTypes type;
   private final String cmd;
+  private final String stdinStr;
 
   public CLITestCmd(String str, CLICommandTypes type) {
+    this(str, type, null);
+  }
+
+  public CLITestCmd(String str, CLICommandTypes type, String stdinStr) {
     cmd = str;
     this.type = type;
+    this.stdinStr = stdinStr;
   }
 
   @Override
@@ -47,6 +53,11 @@ public class CLITestCmd implements CLICommand {
   @Override
   public String getCmd() {
     return cmd;
+  }
+
+  @Override
+  public String getStdinStr() {
+    return stdinStr;
   }
   
   @Override

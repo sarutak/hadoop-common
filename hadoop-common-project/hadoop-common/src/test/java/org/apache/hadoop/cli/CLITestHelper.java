@@ -366,6 +366,7 @@ public class CLITestHelper {
    */
   class TestConfigFileParser extends DefaultHandler {
     String charString = null;
+    String stdinStr = null;
     CLITestData td = null;
     ArrayList<CLICommand> testCommands = null;
     ArrayList<CLICommand> cleanupCommands = null;
@@ -390,7 +391,10 @@ public class CLITestHelper {
         testComparators = new ArrayList<ComparatorData>();
       } else if (qName.equals("comparator")) {
         comparatorData = new ComparatorData();
-      }
+      } else if (qName.equals("command")) {
+          stdinStr = attributes.getValue("string-from-stdin");
+      }  
+                  
       charString = "";
     }
     
@@ -407,7 +411,7 @@ public class CLITestHelper {
         cleanupCommands = null;
       } else if (qName.equals("command")) {
         if (testCommands != null) {
-          testCommands.add(new CLITestCmd(charString, new CLICommandFS()));
+          testCommands.add(new CLITestCmd(charString, new CLICommandFS(), stdinStr));
         } else if (cleanupCommands != null) {
           cleanupCommands.add(new CLITestCmd(charString, new CLICommandFS()));
         }
