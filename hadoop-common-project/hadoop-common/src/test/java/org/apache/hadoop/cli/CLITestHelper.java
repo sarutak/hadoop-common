@@ -393,7 +393,7 @@ public class CLITestHelper {
         comparatorData = new ComparatorData();
       } else if (qName.equals("command")) {
           stdinStr = attributes.getValue("string-from-stdin");
-      }  
+      }
       
       charString = "";
     }
