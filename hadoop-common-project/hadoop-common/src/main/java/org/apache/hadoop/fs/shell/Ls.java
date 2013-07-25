@@ -105,15 +105,23 @@ class Ls extends FsCommand {
   @Override
   protected void processPath(PathData item) throws IOException {
     FileStatus stat = item.stat;
+    String type;
+    if (stat.isDirectory()) {
+      type = "d";
+    } else if (stat.isSymlink()) {
+      type="l";
+    } else {
+      type ="-";
+    }
     String line = String.format(lineFormat,
-        (stat.isDirectory() ? "d" : "-"),
+        type,
         stat.getPermission(),
         (stat.isFile() ? stat.getReplication() : "-"),
         stat.getOwner(),
         stat.getGroup(),
         formatSize(stat.getLen()),
         dateFormat.format(new Date(stat.getModificationTime())),
-        item
+        item + (stat.isSymlink() ? " -> " + stat.getSymlink().toString() : "")
     );
     out.println(line);
   }
