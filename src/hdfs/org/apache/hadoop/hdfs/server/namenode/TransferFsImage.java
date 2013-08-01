@@ -28,16 +28,22 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.protocol.FSConstants;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.hdfs.util.DataTransferThrottler;
 import org.apache.hadoop.hdfs.server.namenode.SecondaryNameNode.ErrorSimulator;
+import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.io.MD5Hash;
+
+
 
 /**
  * This class provides fetching a specified file from the NameNode.
  */
 class TransferFsImage implements FSConstants {
+  static int timeout = 0;
+
   private static final Log LOG = LogFactory.getLog(TransferFsImage.class);
   private boolean isGetImage;
   private boolean isGetEdit;
@@ -174,6 +180,19 @@ class TransferFsImage implements FSConstants {
     URL url = new URL(str);
 
     URLConnection connection = SecurityUtil.openSecureHttpConnection(url);
+    
+    if (timeout <= 0) {
+	// Set the ping interval as timeout
+        Configuration conf = new Configuration();
+        timeout = conf.getInt(DFSConfigKeys.DFS_IMAGE_TRANSFER_TIMEOUT_KEY,
+            DFSConfigKeys.DFS_IMAGE_TRANSFER_TIMEOUT_DEFAULT);
+    }
+
+    if (timeout > 0) {
+	connection.setConnectTimeout(timeout);
+        connection.setReadTimeout(timeout);
+    }
+
     InputStream stream = connection.getInputStream();
     MessageDigest digester = null;
     if (getChecksum) {
