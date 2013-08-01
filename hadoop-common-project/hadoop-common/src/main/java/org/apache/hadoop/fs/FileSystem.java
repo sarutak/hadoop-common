@@ -1697,7 +1697,7 @@ public abstract class FileSystem extends Configured implements Closeable {
     
     // seed the parent directory path, return if it doesn't exist
     try {
-      matches.add(getFileStatus(new Path(baseDir)));
+      matches.add(getFileLinkStatus(new Path(baseDir)));
     } catch (FileNotFoundException e) {
       return patternHasGlob ? matches : null;
     }
