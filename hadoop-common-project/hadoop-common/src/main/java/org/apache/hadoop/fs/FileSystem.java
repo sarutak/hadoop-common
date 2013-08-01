@@ -1721,7 +1721,7 @@ public abstract class FileSystem extends Configured implements Closeable {
               // the component does not have a pattern
               String component = unquotePathComponent(components[i]);
               Path child = new Path(match.getPath(), component);
-              children.add(getFileStatus(child));
+              children.add(getFileLinkStatus(child));
             }
           } catch (FileNotFoundException e) {
             // don't care
