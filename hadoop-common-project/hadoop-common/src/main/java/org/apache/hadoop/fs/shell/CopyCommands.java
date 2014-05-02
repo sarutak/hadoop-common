@@ -231,7 +231,7 @@ class CopyCommands {
     }
 
     @Override
-    protected void complementRemoteDestination(args)
+    protected void complementRemoteDestination(LinkedList<String> args)
     throws IOException {
       destinationComplemented = true;
       super.complementRemoteDestination(args);
