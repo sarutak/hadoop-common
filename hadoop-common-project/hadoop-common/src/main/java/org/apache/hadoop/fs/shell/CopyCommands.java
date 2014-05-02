@@ -233,7 +233,7 @@ class CopyCommands {
     @Override
     protected void complementRemoteDestination(LinkedList<String> args)
     throws IOException {
-      destinationComplemented = true;
+      dstComplemented = true;
       super.complementRemoteDestination(args);
     }
 
@@ -242,7 +242,7 @@ class CopyCommands {
     throws IOException {
 
       if (readStdin) {
-        if (comprementedDestination) {
+        if (dstComplemented) {
           throw new IOException("missing destination argument");
         }
 
