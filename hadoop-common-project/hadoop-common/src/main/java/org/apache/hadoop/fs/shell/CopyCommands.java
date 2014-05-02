@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathIsDirectoryException;
+import org.apache.hadoop.fs.PathNotFoundException;
 import org.apache.hadoop.io.IOUtils;
 
 /** Various commands for copy files */
@@ -194,6 +195,9 @@ class CopyCommands {
       "ownership and the mode. Passing -f overwrites\n" +
       "the destination if it already exists.\n";
 
+    boolean readStdin = false;
+    boolean dstComplemented = false;
+
     @Override
     protected void processOptions(LinkedList<String> args) throws IOException {
       CommandFormat cf = new CommandFormat(1, Integer.MAX_VALUE, "f", "p");
@@ -209,28 +213,52 @@ class CopyCommands {
     @Override
     protected List<PathData> expandArgument(String arg) throws IOException {
       List<PathData> items = new LinkedList<PathData>();
-      try {
-        items.add(new PathData(new URI(arg), getConf()));
-      } catch (URISyntaxException e) {
-        if (Path.WINDOWS) {
-          // Unlike URI, PathData knows how to parse Windows drive-letter paths.
-          items.add(new PathData(arg, getConf()));
-        } else {
-          throw new IOException("unexpected URISyntaxException", e);
+      if (arg.equals("-")) {
+        readStdin = true;
+      } else {
+        try {
+          items.add(new PathData(new URI(arg), getConf()));
+        } catch (URISyntaxException e) {
+          if (Path.WINDOWS) {
+            // Unlike URI, PathData knows how to parse Windows drive-letter paths.
+            items.add(new PathData(arg, getConf()));
+          } else {
+            throw new IOException("unexpected URISyntaxException", e);
+          }
         }
       }
       return items;
     }
 
     @Override
+    protected void complementRemoteDestination(args)
+    throws IOException {
+      destinationComplemented = true;
+      super.complementRemoteDestination(args);
+    }
+
+    @Override
     protected void processArguments(LinkedList<PathData> args)
     throws IOException {
-      // NOTE: this logic should be better, mimics previous implementation
-      if (args.size() == 1 && args.get(0).toString().equals("-")) {
-        copyStreamToTarget(System.in, getTargetPath(args.get(0)));
-        return;
-      }
+
+      if (readStdin) {
+        if (comprementedDestination) {
+          throw new IOException("missing destination argument");
+        }
+
+        if (args.size() != 0) {
+          throw new IOException(
+              "stdin (-) must be the sole input argument when present");
+        }
+
+        if (!dst.parentExists()) {
+          throw new PathNotFoundException(dst.toString());
+        }
+ 
+        copyStreamToTarget(System.in, dst);
+      } else {
       super.processArguments(args);
+      }
     }
   }
 

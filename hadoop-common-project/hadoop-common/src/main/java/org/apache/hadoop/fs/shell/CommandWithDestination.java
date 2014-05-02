@@ -106,7 +106,7 @@ abstract class CommandWithDestination extends FsCommand {
   protected void getRemoteDestination(LinkedList<String> args)
   throws IOException {
     if (args.size() < 2) {
-      dst = new PathData(Path.CUR_DIR, getConf());
+      complementRemoteDestination(args);
     } else {
       String pathString = args.removeLast();
       // if the path is a glob, then it must match one and only one path
@@ -121,6 +121,11 @@ abstract class CommandWithDestination extends FsCommand {
           throw new PathIOException(pathString, "Too many matches");
       }
     }
+  }
+
+  protected void complementRemoteDestination(LinkedList<String> args)
+  throws IOException {
+    dst = new PathData(Path.CUR_DIR, getConf());
   }
 
   @Override
