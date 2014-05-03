@@ -112,6 +112,17 @@ public class TestFsShellCopy {
   }
 
   @Test
+  public void testCopyFromStdin() throws Exception {
+    Path testRoot = new Path(testRootDir, "testPutFile");
+    lfs.delete(testRoot, true);
+    lfs.mkdirs(testRoot);
+
+    Path targetDir = new Path(testRoot, "target");    
+    checkPutFromStdin(targetDir);
+  }
+
+
+  @Test
   public void testCopyDirFromLocal() throws Exception {
     Path testRoot = new Path(testRootDir, "testPutDir");
     lfs.delete(testRoot, true);
@@ -201,6 +212,41 @@ public class TestFsShellCopy {
     checkPut(1, srcPath, new Path("."), useWindowsPath);
   }
 
+
+  private void checkPutFromStdin(Path targetDir)
+  throws Exception {
+    lfs.delete(targetDir, true);
+    lfs.mkdirs(targetDir);    
+    lfs.setWorkingDirectory(targetDir);
+
+    final Path dstPath = new Path("path");
+    final Path dstPathHyphen = new Path("-");
+    final Path childPath = new Path(dstPath, "childPath");
+    final Path childPathHyphen = new Path(dstPath, "-");
+    lfs.setWorkingDirectory(targetDir);
+    
+    // copy to new file, then again
+    prepPut(dstPath, false, false);
+    checkPutFromStdin(0, dstPath);
+    checkPutFromStdin(1, dstPath);
+
+    // the case when parent dir is absent
+    prepPut(dstPath, false, false);
+    checkPutFromStdin(1, childPath);
+
+    // the case when target is dir
+    prepPut(dstPath, true, true);
+    checkPutFromStdin(1, dstPath);
+
+    // the case when target is omitted
+    prepPut(targetDir, true, true);
+    checkPutFromStdin(1, null);
+
+    // the case when target name is "-"
+    prepPut(dstPath, false, false);
+    checkPutFromStdin(0, childPathHyphen);
+  }
+
   private void prepPut(Path dst, boolean create,
                        boolean isDir) throws IOException {
     lfs.delete(dst, true);
@@ -263,7 +309,51 @@ public class TestFsShellCopy {
     }
     assertEquals(exitCode, gotExit);
   }
-  
+
+  private void checkPutFromStdin(int exitCode, Path dest) throws Exception {
+    String argv[] = null;
+    if (dest != null) {
+      argv = new String[]{ "-put", "-", pathAsString(dest) };
+    } else {
+      argv = new String[]{ "-put", "-"};
+    }
+    
+    Path target = null;
+    if (dest != null) {
+      target = new Path(lfs.getWorkingDirectory(), dest);
+    }
+
+    int gotExit;
+    if (target != null) {
+      boolean targetExists = lfs.exists(target);
+      Path parent = lfs.makeQualified(target).getParent();
+    
+      System.out.println("COPY src[<STDIN>] -> ["+dest+"] as ["+target+"]");
+      String lsArgv[] = new String[]{ "-ls", "-R", pathAsString(parent) };
+      shell.run(lsArgv);
+    
+      gotExit = shell.run(argv);
+    
+      System.out.println("copy exit:"+gotExit);
+      lsArgv = new String[]{ "-ls", "-R", pathAsString(parent) };
+      shell.run(lsArgv);
+      
+      if (exitCode == 0) {
+        assertTrue(lfs.exists(target));
+        assertTrue(lfs.isFile(target));
+        assertEquals(1, lfs.listStatus(lfs.makeQualified(target).getParent()).length);      
+      } else {
+        assertEquals(targetExists, lfs.exists(target));
+      }
+    } else {
+      System.out.println("COPY src[<STDIN>] but dest is not set");
+      gotExit = shell.run(argv);
+      System.out.println("copy exit:"+gotExit);
+      assertTrue(0 != gotExit);
+    }
+    assertEquals(exitCode, gotExit);
+  }
+    
   @Test
   public void testRepresentsDir() throws Exception {
     Path subdirDstPath = new Path(dstPath, srcPath.getName());
